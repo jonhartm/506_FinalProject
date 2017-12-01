@@ -1,7 +1,5 @@
 import json
-import requests
-
-from project_caching import Cache
+import project_caching as Cache
 
 FLICKR_KEY = '51525629d45aa9843fcde47a915f6c22'
 
@@ -34,7 +32,7 @@ class Photo:
     def __str__(self):
         return "{} - {}".format(self.title, ",".join(self.tags))
 
-    def GetPhotos(query, API_cache, count=10):
+    def GetPhotos(query, count=10):
         base_url = "https://api.flickr.com/services/rest/"
         params = {}
         params["api_key"] = FLICKR_KEY
@@ -44,7 +42,7 @@ class Photo:
         params["tag_mode"] = "all"
         params["per_page"] = str(count)
         params["extras"] = "tags"
-        response = API_cache.Check(base_url, params)
+        response = Cache.Check(base_url, params)
         photo_list = []
         for p in response["photos"]["photo"]:
             photo_list.append(Photo(p))

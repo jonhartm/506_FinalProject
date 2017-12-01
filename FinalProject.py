@@ -1,18 +1,9 @@
-import json
-import requests
-
-from project_caching import Cache
+import project_caching
 from class_Article import Article
 from class_Photo import Photo
 
-CACHE_FILE = 'cached_data.json'
 ARTICLE_OUTPUT_CSV = 'article_info.csv'
 PHOTO_OUTPUT_CSV = 'photo_info.csv'
-
-API_cache = Cache(CACHE_FILE)
-
-
-Article.GetArticles("Ann Arbor")
 
 def ProjectOption2():
     print("Create a new CSV Files...")

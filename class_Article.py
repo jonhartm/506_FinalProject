@@ -1,7 +1,5 @@
 import json
-import requests
-
-from project_caching import Cache
+import project_caching as Cache
 
 NYT_APIKEY = '7fa52abd77be435b8fdd4b0fb37a8ed5'
 
@@ -36,14 +34,14 @@ class Article:
                 cleanWord += s
         return cleanWord
 
-    def GetArticles(query, API_cache):
+    def GetArticles(query):
         nyt_articleSearch_url = 'http://api.nytimes.com/svc/search/v2/articlesearch.json'
         params = {}
         params["api-key"]=NYT_APIKEY
         params["sort"]="newest"
         params["fq"]='source:("The New York Times")' # NYT is the only source that reliably includes keywords
         params["q"]='+'.join(query.split())
-        response = API_cache.Check(nyt_articleSearch_url, params)
+        response = Cache.Check(nyt_articleSearch_url, params)
         input()
         article_list = []
         for article_dict in response["response"]["docs"]:
