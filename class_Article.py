@@ -1,7 +1,17 @@
 import json
+
 import project_caching as Cache
 
 NYT_APIKEY = '7fa52abd77be435b8fdd4b0fb37a8ed5'
+
+from datetime import datetime, timezone
+
+def alphabeticOnly(word):
+    cleanWord = ""
+    for s in word:
+        if s.isalpha():
+            cleanWord += s
+    return cleanWord
 
 class Article:
     def __init__(self, art_dict={}):
@@ -12,29 +22,25 @@ class Article:
         self.keywords = []
         for kw in art_dict["keywords"]:
             self.keywords.append(kw["value"])
-        self.published = art_dict["pub_date"]
+        self.published = datetime.strptime(art_dict["pub_date"], "%Y-%m-%dT%H:%M:%S%z")
         self.byline = art_dict["byline"]["original"]
 
     def LongestWordInAbstract(self):
-        return Article.alphabeticOnly(sorted(self.snippet.split(), key=lambda l: len(Article.alphabeticOnly(l)), reverse = True)[0])
+        return alphabeticOnly(sorted(self.snippet.split(), key=lambda l: len(alphabeticOnly(l)), reverse = True)[0])
+
+    def AgeOfArticle(self):
+        return str((datetime.now(timezone.utc) - self.published).days) + " days ago"
 
     def ToCSVInfo(self):
         return "{},{},{}\n".format(
-            Article.alphabeticOnly(self.headline),
-            Article.alphabeticOnly(self.byline),
+            alphabeticOnly(self.headline),
+            alphabeticOnly(self.byline),
             "|".join(self.keywords))
 
     def __str__(self):
-        return "'{}'\n\t{} (published {})\n\t(Keywords: {})".format(self.headline, self.byline, self.published, ','.join(self.keywords))
+        return "'{}'\n\t{} (published {})\n\t(Keywords: {})".format(self.headline, self.byline, self.AgeOfArticle(), ','.join(self.keywords))
 
-    def alphabeticOnly(word):
-        cleanWord = ""
-        for s in word:
-            if s.isalpha():
-                cleanWord += s
-        return cleanWord
-
-    def GetArticles(query):
+    def GetArticles(query, count=10):
         nyt_articleSearch_url = 'http://api.nytimes.com/svc/search/v2/articlesearch.json'
         params = {}
         params["api-key"]=NYT_APIKEY
@@ -42,9 +48,9 @@ class Article:
         params["fq"]='source:("The New York Times")' # NYT is the only source that reliably includes keywords
         params["q"]='+'.join(query.split())
         response = Cache.Check(nyt_articleSearch_url, params)
-        input()
         article_list = []
         for article_dict in response["response"]["docs"]:
             article_list.append(Article(article_dict))
-        # return a list of the top 5 articles, sorted by the number of keywords
-        return sorted(article_list, key=lambda k: len(k.keywords), reverse = True)[:5]
+        count = max(min(count, 10), 1) # clamp count between 1 and 10
+        # return a list of articles, sorted by the number of keywords
+        return sorted(article_list, key=lambda k: len(k.keywords), reverse = True)[:count]
