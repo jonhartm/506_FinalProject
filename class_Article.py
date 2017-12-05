@@ -13,6 +13,7 @@ def alphabeticOnly(word):
             cleanWord += s
     return cleanWord
 
+# returns an Article object based on the dictionary returned from the NYT's article search API
 class Article:
     def __init__(self, art_dict={}):
         self.url = art_dict["web_url"]
@@ -22,15 +23,24 @@ class Article:
         self.keywords = []
         for kw in art_dict["keywords"]:
             self.keywords.append(kw["value"])
-        self.published = datetime.strptime(art_dict["pub_date"], "%Y-%m-%dT%H:%M:%S%z")
+        # There are different formats for the published datetime
+        self.published = datetime.strptime(art_dict["pub_date"], "%Y-%m-%dT%H:%M:%S:%zZ")
+        # self.published = datetime.strptime(art_dict["pub_date"], "%Y-%m-%dT%H:%M:%S%z")
         self.byline = art_dict["byline"]["original"]
 
+    # returns the longest word by length in the snippet for this article
     def LongestWordInAbstract(self):
         return alphabeticOnly(sorted(self.snippet.split(), key=lambda l: len(alphabeticOnly(l)), reverse = True)[0])
 
+    # returns a string representing how long ago this article was published.
+    # less than 30 days old, "days ago"
+    # more than 30 days but less than a year, "months ago"
+    # more than a year, "years ago"
     def AgeOfArticle(self):
-        return str((datetime.now(timezone.utc) - self.published).days) + " days ago"
 
+
+        return str((datetime.now(timezone.utc) - self.published).days) + " days ago"
+    # returns a string of the title, user, and list of tags in a CSV writable format
     def ToCSVInfo(self):
         return "{},{},{}\n".format(
             alphabeticOnly(self.headline),
@@ -40,6 +50,8 @@ class Article:
     def __str__(self):
         return "'{}'\n\t{} (published {})\n\t(Keywords: {})".format(self.headline, self.byline, self.AgeOfArticle(), ','.join(self.keywords))
 
+    # Checks the NYT api for articles that match the provided query, sorted by the number of keywords provided.
+    # Can retrieve between 1 and 10 articles.
     def GetArticles(query, count=10):
         nyt_articleSearch_url = 'http://api.nytimes.com/svc/search/v2/articlesearch.json'
         params = {}

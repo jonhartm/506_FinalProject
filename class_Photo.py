@@ -3,6 +3,7 @@ import project_caching as Cache
 
 FLICKR_KEY = '51525629d45aa9843fcde47a915f6c22'
 
+# creates a Photo object based on the dictionary information returned by flickr's flickr.photos.search api
 class Photo:
     def __init__(self, photo_dict={}):
         self.id = photo_dict["id"]
@@ -15,12 +16,15 @@ class Photo:
         for t in photo_dict["tags"].split():
             self.tags.append(t.encode("ascii", "replace").decode("ascii"))
 
+    # returns the source URL for this particular photo
     def SourceUrl(self):
         return "https://farm{}.staticflickr.com/{}/{}_{}.jpg".format(self.farm, self.server, self.id, self.secret)
 
+    # returns the number of tags provided for this photo
     def NumberOfTags(self):
         return len(self.tags)
 
+    # returns a string of the title, user, and list of tags in a CSV writable format
     def ToCSVInfo(self):
         return "{},{},{},{}\n".format(
             self.title,
@@ -32,6 +36,7 @@ class Photo:
     def __str__(self):
         return "{} - {}".format(self.title, ",".join(self.tags))
 
+    # gets a list of from flickr based in the provided query string. Count is the number of photos to return.
     def GetPhotos(query, count=10):
         base_url = "https://api.flickr.com/services/rest/"
         params = {}
