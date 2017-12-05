@@ -13,7 +13,7 @@ class Photo:
         self.title = photo_dict["title"]
         self.tags = []
         for t in photo_dict["tags"].split():
-            self.tags.append(str(t.encode("ascii", "replace")))
+            self.tags.append(t.encode("ascii", "replace").decode("ascii"))
 
     def SourceUrl(self):
         return "https://farm{}.staticflickr.com/{}/{}_{}.jpg".format(self.farm, self.server, self.id, self.secret)
