@@ -38,6 +38,7 @@ class Photo:
 
     # gets a list of from flickr based in the provided query string. Count is the number of photos to return.
     def GetPhotos(query, count=10):
+        count = max(min(count, 100), 1) # clamp count between 1 and 100
         base_url = "https://api.flickr.com/services/rest/"
         params = {}
         params["api_key"] = FLICKR_KEY
