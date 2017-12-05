@@ -41,9 +41,14 @@ class Article:
     # more than 30 days but less than a year, "months ago"
     # more than a year, "years ago"
     def AgeOfArticle(self):
+        days = (datetime.now(timezone.utc) - self.published).days
+        if days <= 31:
+            return str(days) + " days ago"
+        elif days <= 365:
+            return str(days//31) + " months ago"
+        else:
+            return str(days//365) + " years ago"
 
-
-        return str((datetime.now(timezone.utc) - self.published).days) + " days ago"
     # returns a string of the title, user, and list of tags in a CSV writable format
     def ToCSVInfo(self):
         return "{},{},{}\n".format(
