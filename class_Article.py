@@ -25,7 +25,7 @@ class Article:
             self.keywords.append(kw["value"])
         # There are different formats for the published datetime
         if (art_dict["pub_date"])[-1] == "Z":
-            self.published = datetime.strptime(art_dict["pub_date"], "%Y-%m-%dT%H:%M:%SZ")
+            self.published = datetime.strptime(art_dict["pub_date"] + "+0000", "%Y-%m-%dT%H:%M:%SZ%z")
         else:
             self.published = datetime.strptime(art_dict["pub_date"], "%Y-%m-%dT%H:%M:%S%z")
         self.byline = ""
