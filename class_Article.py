@@ -24,9 +24,13 @@ class Article:
         for kw in art_dict["keywords"]:
             self.keywords.append(kw["value"])
         # There are different formats for the published datetime
-        self.published = datetime.strptime(art_dict["pub_date"], "%Y-%m-%dT%H:%M:%S:%zZ")
-        # self.published = datetime.strptime(art_dict["pub_date"], "%Y-%m-%dT%H:%M:%S%z")
-        self.byline = art_dict["byline"]["original"]
+        if (art_dict["pub_date"])[-1] == "Z":
+            self.published = datetime.strptime(art_dict["pub_date"], "%Y-%m-%dT%H:%M:%SZ")
+        else:
+            self.published = datetime.strptime(art_dict["pub_date"], "%Y-%m-%dT%H:%M:%S%z")
+        self.byline = ""
+        if "byline" in art_dict:
+            self.byline = art_dict["byline"]["original"]
 
     # returns the longest word by length in the snippet for this article
     def LongestWordInAbstract(self):
