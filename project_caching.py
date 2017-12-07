@@ -1,9 +1,14 @@
 import json
 import requests
+import time as t
+
+from datetime import datetime,time
 
 CACHE_FILE = 'cached_data.json'
 
 API_cache = {}
+global lastrequest
+lastrequest = datetime.now()
 
 # Try to open the cache file if you can find it and load the json data into API_cache
 try:
@@ -17,6 +22,7 @@ except Exception as e:
 
 # Checks the cache file for a combination of url and keys to see if it exists in the cache already.
 def Check(url, params):
+    global lastrequest
     # create the unique ID to use in the cache
     param_keys = sorted(params.keys()) # sort the paramaters so we know they'll be in the same order even if they aren't in order in the dictionary attribute
     unique_ID = url # start creating the unique_ID with the URL
@@ -30,11 +36,17 @@ def Check(url, params):
         return API_cache[unique_ID]
     else:
         print("New request - adding to cache file.")
+
+        if (datetime.now()-lastrequest).seconds < 1:
+            t.sleep(1)
+        lastrequest = datetime.now()
+
         if "flickr" in url: #Flickr is weird, strip off the encapulating parenthesis thing
             response = requests.get(url, params).text[14:-1]
         else:
             response = requests.get(url, params).text
         API_cache[unique_ID] = json.loads(response)
+
         with open(CACHE_FILE, 'w') as f:
             f.write(json.dumps(API_cache)) # write the contents of the cache dictionary to the cache
         return json.loads(response)
