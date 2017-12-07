@@ -7,7 +7,7 @@ from datetime import datetime,time
 CACHE_FILE = 'cached_data.json'
 
 API_cache = {}
-global lastrequest
+global lastrequest # global variable for tracking the last API call
 lastrequest = datetime.now()
 
 # Try to open the cache file if you can find it and load the json data into API_cache
@@ -37,9 +37,10 @@ def Check(url, params):
     else:
         print("New request - adding to cache file.")
 
+        # if the last call was less than a second ago, wait one second. NYT API doesn't like it.
         if (datetime.now()-lastrequest).seconds < 1:
             t.sleep(1)
-        lastrequest = datetime.now()
+        lastrequest = datetime.now() # set the last request to the current time.
 
         if "flickr" in url: #Flickr is weird, strip off the encapulating parenthesis thing
             response = requests.get(url, params).text[14:-1]
