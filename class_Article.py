@@ -60,18 +60,22 @@ class Article:
         return "'{}'\n\t{} (published {})\n\t(Keywords: {})".format(self.headline, self.byline, self.AgeOfArticle(), ','.join(self.keywords))
 
     # Checks the NYT api for articles that match the provided query, sorted by the number of keywords provided.
-    # Can retrieve between 1 and 10 articles.
+    # Can retrieve between 1 and 100 articles. Default is 10.
     def GetArticles(query, count=10):
         nyt_articleSearch_url = 'http://api.nytimes.com/svc/search/v2/articlesearch.json'
         params = {}
         params["api-key"]=NYT_APIKEY
         params["sort"]="newest"
         params["fq"]='source:("The New York Times")' # NYT is the only source that reliably includes keywords
-        params["q"]='+'.join(query.split())
-        response = Cache.Check(nyt_articleSearch_url, params)
+        params["q"]='+'.join(query.split()) # replace spaces with "+" per API instructions
+        params["fl"]="web_url,snippet,source,headline,keywords,pub_date,byline" # filter the response to just the information we want
         article_list = []
-        for article_dict in response["response"]["docs"]:
-            article_list.append(Article(article_dict))
-        count = max(min(count, 10), 1) # clamp count between 1 and 10
+        while count > 0:
+            params["page"]=str(count-count%10)[0]
+            count -= 10
+            response = Cache.Check(nyt_articleSearch_url, params)
+            for article_dict in response["response"]["docs"]:
+                article_list.append(Article(article_dict))
+
         # return a list of articles, sorted by the number of keywords
         return sorted(article_list, key=lambda k: len(k.keywords), reverse = True)[:count]
