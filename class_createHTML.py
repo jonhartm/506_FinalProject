@@ -1,20 +1,29 @@
-import dominate
-from dominate.tags import *
-
 class CreateHTML:
     def __init__(self, filename, doctitle):
         self.filename = filename
-        self.doc = dominate.document(title = doctitle)
+        self.title = doctitle
+        self.body = []
 
-    def AddTitleSection(self, sectiontitle):
-        self.doc.add(h2(sectiontitle))
+    def AddHeading(self, size, sectiontitle):
+        self.body.append([size, sectiontitle])
 
-    def AddImageSection(self, title, photodict):
-        self.doc.add(h4(title))
-        for photo in photodict.keys():
-            self.doc.add(p(photo))
-            self.doc.add(img(src=photodict[photo]))
+    def AddImage(self, src):
+        self.body.append(["img", src])
 
     def CreateFile(self):
         f = open(self.filename, 'w')
-        f.write(str(self.doc))
+        f.write("<!DOCTYPE html>")
+        f.write("<html>")
+        f.write("<head>")
+        f.write("<title>" + self.title + "</title>")
+        f.write("</head>")
+
+        for l in self.body:
+            if l[0] == "img":
+                f.write("<img src={}>".format(l[1]))
+            else:
+                f.write("<{}>{}</{}>".format(l[0], l[1], l[0]))
+
+        f.write("<body>")
+        f.write("</body>")
+        f.write("</html>")
