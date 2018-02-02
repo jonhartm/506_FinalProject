@@ -1,55 +1,27 @@
 import json
-import project_caching as Cache
 
-FLICKR_KEY = '51525629d45aa9843fcde47a915f6c22'
+# FLICKR_KEY = '51525629d45aa9843fcde47a915f6c22'
 
-# creates a Photo object based on the dictionary information returned by flickr's flickr.photos.search api
+# removes any non-ascii chars from a string
+def AsciiOnly(s):
+    return s.encode("ascii", "replace").decode("ascii")
+
+# creates a Photo object based on the dictionary information returned by flickr's flickr.photos.search api ({REQ} REST API #2)
 class Photo:
-    def __init__(self, photo_dict={}):
+    def __init__(self, photo_dict={}): # {REQ} Constructor 2
         self.id = photo_dict["id"]
-        self.owner = photo_dict["owner"]
+        self.owner = photo_dict["owner"] # {REQ} Additional Instance Variables
         self.secret = photo_dict["secret"]
         self.server = photo_dict["server"]
         self.farm = photo_dict["farm"]
-        self.title = photo_dict["title"]
+        self.title = AsciiOnly(photo_dict["title"])
         self.tags = []
         for t in photo_dict["tags"].split():
-            self.tags.append(t.encode("ascii", "replace").decode("ascii"))
+            self.tags.append(AsciiOnly(t))
 
     # returns the source URL for this particular photo
-    def SourceUrl(self):
+    def SourceUrl(self): # {REQ} Additional Method 2
         return "https://farm{}.staticflickr.com/{}/{}_{}.jpg".format(self.farm, self.server, self.id, self.secret)
 
-    # returns the number of tags provided for this photo
-    def NumberOfTags(self):
-        return len(self.tags)
-
-    # returns a string of the title, user, and list of tags in a CSV writable format
-    def ToCSVInfo(self):
-        return "{},{},{},{}\n".format(
-            self.title,
-            self.owner,
-            "|".join(self.tags),
-            str(self.NumberOfTags()),
-            self.SourceUrl)
-
-    def __str__(self):
-        return "{} - {}".format(self.title, ",".join(self.tags))
-
-    # gets a list of from flickr based in the provided query string. Count is the number of photos to return.
-    def GetPhotos(query, count=10):
-        count = max(min(count, 100), 1) # clamp count between 1 and 100
-        base_url = "https://api.flickr.com/services/rest/"
-        params = {}
-        params["api_key"] = FLICKR_KEY
-        params["method"]="flickr.photos.search"
-        params["format"]="json"
-        params["tags"] = query
-        params["tag_mode"] = "all"
-        params["per_page"] = str(count)
-        params["extras"] = "tags"
-        response = Cache.Check(base_url, params)
-        photo_list = []
-        for p in response["photos"]["photo"]:
-            photo_list.append(Photo(p))
-        return photo_list
+    def __str__(self): # {REQ} String Method 2
+        return self.title + ": (tags: " + ", ".join(self.tags) + ")"

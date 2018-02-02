@@ -4,9 +4,16 @@ import time as t
 
 from datetime import datetime,time
 
-CACHE_FILE = 'cached_data.json'
+# ------------------------------------------------------------------------------
+# Creates a cache file if one does not already exist, and checks the cache files
+# for calls to the API that have already been made. Also handles actually getting
+# the reponse from the API, and makes sure calls don't go out too fast
+# ------------------------------------------------------------------------------
+
+CACHE_FILE = 'SI506finalproject_cache.json'
 
 API_cache = {}
+# referenced https://stackoverflow.com/questions/423379/using-global-variables-in-a-function-other-than-the-one-that-created-them
 global lastrequest # global variable for tracking the last API call
 lastrequest = datetime.now()
 
@@ -15,7 +22,7 @@ try:
     with open(CACHE_FILE, 'r') as f:
         API_cache = json.loads(f.read())
 except Exception as e:
-    print(e)
+    # print(e)
     print("No cache file named {} exists or I can't read it properly. Creating one now...".format(CACHE_FILE))
     f = open(CACHE_FILE, 'w')
     f.close()
@@ -37,17 +44,17 @@ def Check(url, params):
     else:
         print("New request - adding to cache file.")
 
-        # if the last call was less than a second ago, wait one second. NYT API doesn't like it.
-        if (datetime.now()-lastrequest).seconds < 1:
-            t.sleep(1)
-        lastrequest = datetime.now() # set the last request to the current time.
+    # if the last call was less than a second ago, wait one second. NYT API doesn't like it.
+    if (datetime.now()-lastrequest).seconds < 1:
+        t.sleep(1)
+    lastrequest = datetime.now() # set the last request to the current time.
 
-        if "flickr" in url: #Flickr is weird, strip off the encapulating parenthesis thing
-            response = requests.get(url, params).text[14:-1]
-        else:
-            response = requests.get(url, params).text
-        API_cache[unique_ID] = json.loads(response)
+    if "flickr" in url: #Flickr is weird, strip off the encapulating parenthesis thing
+        response = requests.get(url, params).text[14:-1]
+    else:
+        response = requests.get(url, params).text
+    API_cache[unique_ID] = json.loads(response)
 
-        with open(CACHE_FILE, 'w') as f:
-            f.write(json.dumps(API_cache)) # write the contents of the cache dictionary to the cache
-        return json.loads(response)
+    f = open(CACHE_FILE, 'w')
+    f.write(json.dumps(API_cache)) # write the contents of the cache dictionary to the cache
+    return json.loads(response)
